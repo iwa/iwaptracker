@@ -105,7 +105,7 @@ func initialFetch(config *Config, state *State) {
 	for gamename, datapackage := range apiStaticTrackerResponse.Datapackage {
 		if _, ok := gameSet[gamename]; ok {
 
-			state.TrackedGames[gamename] = *NewGame(gamename)
+			state.TrackedGamesMap[gamename] = *NewGame(gamename)
 
 			log.Println("info: fetching datapackage for game", gamename)
 
@@ -120,11 +120,11 @@ func initialFetch(config *Config, state *State) {
 			}
 
 			for itemName, itemID := range apiDatapackageResponse.ItemNameToID {
-				state.TrackedGames[gamename].IdItemsMap[strconv.Itoa(itemID)] = itemName
+				state.TrackedGamesMap[gamename].IdItemsMap[strconv.Itoa(itemID)] = itemName
 			}
 
 			for locationName, locationID := range apiDatapackageResponse.LocationNameToID {
-				state.TrackedGames[gamename].IdLocationsMap[strconv.Itoa(locationID)] = locationName
+				state.TrackedGamesMap[gamename].IdLocationsMap[strconv.Itoa(locationID)] = locationName
 			}
 
 			log.Println("info: datapackage for game", gamename, "fetched and processed")
@@ -164,7 +164,7 @@ func RefreshPlayerData(config *Config, state *State) {
 				continue
 			}
 
-			game := state.TrackedGames[gameName]
+			game := state.TrackedGamesMap[gameName]
 
 			itemName, ok := game.IdItemsMap[itemID]
 			if !ok {
@@ -178,7 +178,7 @@ func RefreshPlayerData(config *Config, state *State) {
 
 			// check if the item was already received before for this slot
 			alreadyReceived := false
-			if slices.Contains(state.SlotReceivedItems[playerIDString], itemID) {
+			if slices.Contains(state.SlotReceivedItemsMap[playerIDString], itemID) {
 				alreadyReceived = true
 			}
 
@@ -187,7 +187,7 @@ func RefreshPlayerData(config *Config, state *State) {
 			}
 
 			// new item received, we add it to the list of received items for this slot
-			state.SlotReceivedItems[playerIDString] = append(state.SlotReceivedItems[playerIDString], itemID)
+			state.SlotReceivedItemsMap[playerIDString] = append(state.SlotReceivedItemsMap[playerIDString], itemID)
 
 			if sentByPlayerID == playerIDString {
 				continue // do not trigger notification if it's an item unlocked by the player
