@@ -4,10 +4,10 @@ import "database/sql"
 
 // Config struct
 type Config struct {
-	PeriodMinutes int
-	RoomID        string
-	TrackerID     string
-	SlotIDs       []string
+	PeriodMinutes  int
+	RoomID         string
+	TrackerID      string
+	TrackedSlotIDs []string
 
 	NtfyURL string
 }
@@ -36,7 +36,7 @@ type State struct {
 	DB                   *sql.DB
 	PlayerNamesMap       map[string]string   // map player id to player name
 	PlayerGameMap        map[string]string   // map player id to game name
-	TrackedGamesMap      map[string]Game     // map gamename to Game data
+	GamesMap             map[string]Game     // map gamename to Game data
 	SlotReceivedItemsMap map[string][]string // map slot id to list of received items ids
 }
 
@@ -45,9 +45,30 @@ func NewState(db *sql.DB) *State {
 		DB:                   db,
 		PlayerNamesMap:       make(map[string]string),
 		PlayerGameMap:        make(map[string]string),
-		TrackedGamesMap:      make(map[string]Game),
+		GamesMap:             make(map[string]Game),
 		SlotReceivedItemsMap: LoadReceivedItems(db),
 	}
+}
+
+func (s *State) GetPlayerName(playerID string) string {
+	playerName, ok := s.PlayerNamesMap[playerID]
+	if !ok {
+		return ""
+	}
+	return playerName
+}
+
+func (s *State) GetGameNameByPlayerId(playerID string) string {
+	gameName, ok := s.PlayerGameMap[playerID]
+	if !ok {
+		return ""
+	}
+	return gameName
+}
+
+func (s *State) GetGameByName(gameName string) (Game, bool) {
+	game, ok := s.GamesMap[gameName]
+	return game, ok
 }
 
 /* --- DTO structs --- */

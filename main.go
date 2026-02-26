@@ -62,10 +62,10 @@ func parseEnvIntoConfig(config *Config) {
 	if slotIDs := os.Getenv("SLOT_IDS"); slotIDs != "" {
 		splitted := strings.Split(slotIDs, ",")
 		for _, v := range splitted {
-			config.SlotIDs = append(config.SlotIDs, strings.TrimSpace(v))
+			config.TrackedSlotIDs = append(config.TrackedSlotIDs, strings.TrimSpace(v))
 		}
 
-		log.Println("info: slot ids are", config.SlotIDs)
+		log.Println("info: slot ids are", config.TrackedSlotIDs)
 	} else {
 		log.Panicln("error: SLOT_IDS missing")
 	}
@@ -124,7 +124,7 @@ func initialFetch(config *Config, state *State) {
 
 	// fetch datapackages for needed games and populate state
 	for gamename, datapackage := range apiStaticTrackerResponse.Datapackage {
-		state.TrackedGamesMap[gamename] = *NewGame(gamename)
+		state.GamesMap[gamename] = *NewGame(gamename)
 
 		log.Println("info: fetching datapackage for game", gamename)
 
@@ -139,11 +139,11 @@ func initialFetch(config *Config, state *State) {
 		}
 
 		for itemName, itemID := range apiDatapackageResponse.ItemNameToID {
-			state.TrackedGamesMap[gamename].IdItemsMap[strconv.Itoa(itemID)] = itemName
+			state.GamesMap[gamename].IdItemsMap[strconv.Itoa(itemID)] = itemName
 		}
 
 		for locationName, locationID := range apiDatapackageResponse.LocationNameToID {
-			state.TrackedGamesMap[gamename].IdLocationsMap[strconv.Itoa(locationID)] = locationName
+			state.GamesMap[gamename].IdLocationsMap[strconv.Itoa(locationID)] = locationName
 		}
 
 		log.Println("info: datapackage for game", gamename, "fetched and processed")
@@ -168,7 +168,7 @@ func RefreshPlayerData(config *Config, state *State) {
 	for _, playerItemsReceived := range apiTrackerResponse.PlayerItemsReceived {
 		playerIDString := strconv.Itoa(playerItemsReceived.Player)
 
-		if !slices.Contains(config.SlotIDs, playerIDString) {
+		if !slices.Contains(config.TrackedSlotIDs, playerIDString) {
 			continue // not tracked player, we ignore it
 		}
 
@@ -185,7 +185,7 @@ func RefreshPlayerData(config *Config, state *State) {
 				continue
 			}
 
-			game := state.TrackedGamesMap[gameName]
+			game := state.GamesMap[gameName]
 
 			itemName, ok := game.IdItemsMap[itemID]
 			if !ok {
@@ -197,7 +197,7 @@ func RefreshPlayerData(config *Config, state *State) {
 			senderGameName, ok := state.PlayerGameMap[sentByPlayerID]
 
 			if ok {
-				senderGame := state.TrackedGamesMap[senderGameName]
+				senderGame := state.GamesMap[senderGameName]
 
 				locationName, ok = senderGame.IdLocationsMap[locationID]
 				if !ok {
