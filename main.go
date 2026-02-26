@@ -246,7 +246,7 @@ func DetermineFlagRarity(flagID string) string {
 		return "useful"
 	case "3":
 		return "progression + useful"
-	case "4":
+	case "4", "5", "6", "7":
 		return "trap"
 	default:
 		return "unknown"
