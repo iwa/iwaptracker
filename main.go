@@ -178,6 +178,7 @@ func RefreshPlayerData(config *Config, state *State) {
 			sentByPlayerID := strconv.Itoa(items[2])
 			flagID := strconv.Itoa(items[3])
 
+			// receiving player info
 			gameName, ok := state.PlayerGameMap[playerIDString]
 			if !ok {
 				log.Println("warning: received item for player with unknown game, player id:", playerItemsReceived.Player, "skipping...")
@@ -191,9 +192,20 @@ func RefreshPlayerData(config *Config, state *State) {
 				log.Println("warning: received item with unknown id", itemID, "for game", game.Name)
 			}
 
-			locationName, ok := game.IdLocationsMap[locationID]
-			if !ok {
-				log.Println("warning: received item with unknown location id", locationID, "for game", game.Name)
+			// sender player info
+			locationName := "?"
+			senderGameName, ok := state.PlayerGameMap[sentByPlayerID]
+
+			if ok {
+				senderGame := state.TrackedGamesMap[senderGameName]
+
+				locationName, ok = senderGame.IdLocationsMap[locationID]
+				if !ok {
+					log.Println("warning: received item with unknown location id", locationID, "for sender game", senderGame.Name)
+					locationName = "?"
+				}
+			} else {
+				log.Println("warning: unknown sender game, can't grab location name")
 			}
 
 			// check if the item was already received before for this slot
