@@ -49,12 +49,12 @@ func parseEnvIntoConfig(config *Config) {
 		config.PeriodMinutes = 60
 	}
 
-	// tracker id parsing
-	if trackerID := os.Getenv("TRACKER_ID"); trackerID != "" {
-		config.TrackerID = trackerID
-		log.Println("info: tracker id is", trackerID)
+	// room id parsing
+	if roomID := os.Getenv("ROOM_ID"); roomID != "" {
+		config.RoomID = roomID
+		log.Println("info: room id is", roomID)
 	} else {
-		log.Panicln("error: TRACKER_ID missing")
+		log.Panicln("error: ROOM_ID missing")
 	}
 
 	// slots ids parsing
