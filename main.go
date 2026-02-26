@@ -186,6 +186,10 @@ func RefreshPlayerData(config *Config, state *State) {
 			// new item received, we add it to the list of received items for this slot
 			state.SlotReceivedItems[playerIDString] = append(state.SlotReceivedItems[playerIDString], itemID)
 
+			if sentByPlayerID == playerIDString {
+				continue // do not trigger notification if it's an item unlocked by the player
+			}
+
 			// send notification on ntfy
 			log.Println("info: new item received for player with slot id", playerItemsReceived.Player, ":", itemName, "at location", locationName)
 			SendNotification(config, playerIDString, itemID, itemName, locationID, locationName, sentByPlayerID, flagID)
