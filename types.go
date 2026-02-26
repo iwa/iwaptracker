@@ -37,6 +37,7 @@ type State struct {
 
 func NewState() *State {
 	return &State{
+		PlayerGameMap:     make(map[string]string),
 		TrackedGames:      make(map[string]Game),
 		SlotReceivedItems: make(map[string][]string),
 	}
