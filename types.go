@@ -5,6 +5,7 @@ import "database/sql"
 // Config struct
 type Config struct {
 	PeriodMinutes int
+	RoomID        string
 	TrackerID     string
 	SlotIDs       []string
 
