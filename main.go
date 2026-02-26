@@ -202,6 +202,10 @@ func RefreshPlayerData(config *Config, state *State) {
 				continue // do not trigger notification if it's an item unlocked by the player
 			}
 
+			if flagID != "1" && flagID != "2" && flagID != "3" {
+				continue // only trigger notification for progression/useful items
+			}
+
 			// send notification on ntfy
 			log.Println("info: new item received for player with slot id", playerItemsReceived.Player, ":", itemName, "at location", locationName)
 			SendNotification(config, playerIDString, itemID, itemName, locationID, locationName, sentByPlayerID, flagID)
