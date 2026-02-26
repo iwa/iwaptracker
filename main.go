@@ -188,6 +188,7 @@ func RefreshPlayerData(config *Config, state *State) {
 
 			// new item received, we add it to the list of received items for this slot
 			state.SlotReceivedItemsMap[playerIDString] = append(state.SlotReceivedItemsMap[playerIDString], itemID)
+			SaveReceivedItem(state.DB, playerIDString, itemID)
 
 			if sentByPlayerID == playerIDString {
 				continue // do not trigger notification if it's an item unlocked by the player
