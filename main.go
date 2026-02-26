@@ -57,7 +57,7 @@ func parseEnvIntoConfig(config *Config) {
 		log.Panicln("error: ROOM_ID missing")
 	}
 
-	// slots ids parsing
+	// watched slots ids parsing
 	if slotIDs := os.Getenv("SLOT_IDS"); slotIDs != "" {
 		splitted := strings.Split(slotIDs, ",")
 		for _, v := range splitted {
