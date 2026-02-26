@@ -80,13 +80,36 @@ func parseEnvIntoConfig(config *Config) {
 
 func initialFetch(config *Config, state *State) {
 
-	resp, err := http.Get("https://archipelago.gg/api/static_tracker/" + config.TrackerID)
+	roomResp, err := http.Get("https://archipelago.gg/api/room_status/" + config.RoomID)
+	if err != nil {
+		log.Panicln("error: could not fetch room data:", err)
+	}
+
+	var roomStatusResponse RoomStatusResponse
+	if err := json.NewDecoder(roomResp.Body).Decode(&roomStatusResponse); err != nil {
+		log.Panicln("error: could not decode room response:", err)
+	}
+
+	// populate player id to player name map
+	for i, playerData := range roomStatusResponse.Players {
+		playerId := i + 1
+		playerName := playerData[0]
+
+		state.PlayerNamesMap[strconv.Itoa(playerId)] = playerName
+	}
+
+	config.TrackerID = roomStatusResponse.Tracker
+	log.Println("info: tracker id is", config.TrackerID)
+
+	// TRACKER RELATED
+
+	trackerResp, err := http.Get("https://archipelago.gg/api/static_tracker/" + config.TrackerID)
 	if err != nil {
 		log.Panicln("error: could not fetch static tracker data:", err)
 	}
 
 	var apiStaticTrackerResponse StaticTrackerResponse
-	if err := json.NewDecoder(resp.Body).Decode(&apiStaticTrackerResponse); err != nil {
+	if err := json.NewDecoder(trackerResp.Body).Decode(&apiStaticTrackerResponse); err != nil {
 		log.Panicln("error: could not decode static tracker response:", err)
 	}
 

@@ -34,6 +34,7 @@ func NewGame(name string) *Game {
 // State struct, which holds all important information
 type State struct {
 	DB                   *sql.DB
+	PlayerNamesMap       map[string]string   // map player id to player name
 	PlayerGameMap        map[string]string   // map player id to game name
 	TrackedGamesMap      map[string]Game     // map gamename to Game data
 	SlotReceivedItemsMap map[string][]string // map slot id to list of received items ids
@@ -42,6 +43,7 @@ type State struct {
 func NewState(db *sql.DB) *State {
 	return &State{
 		DB:                   db,
+		PlayerNamesMap:       make(map[string]string),
 		PlayerGameMap:        make(map[string]string),
 		TrackedGamesMap:      make(map[string]Game),
 		SlotReceivedItemsMap: LoadReceivedItems(db),
@@ -76,4 +78,12 @@ type TrackerResponse struct {
 		Player int     `json:"player"`
 		Team   int     `json:"team"`
 	} `json:"player_items_received"`
+}
+
+type RoomStatusResponse struct {
+	LastActivity string     `json:"last_activity"`
+	LastPort     int        `json:"last_port"`
+	Players      [][]string `json:"players"`
+	Timeout      int        `json:"timeout"`
+	Tracker      string     `json:"tracker"`
 }
