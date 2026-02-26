@@ -228,7 +228,7 @@ func DetermineFlagRarity(flagID string) string {
 
 func SendNotification(config *Config, playerID, itemID, itemName, locationID, locationName, sentByPlayerID, flagID string) {
 	title := fmt.Sprintf("%s - Received %s (%s)", playerID, itemName, DetermineFlagRarity(flagID))
-	message := fmt.Sprintf("item: %s (%s)\nlocation: %s (%s)\nby player %s", itemName, itemID, locationName, locationID, playerID)
+	message := fmt.Sprintf("item: %s (%s)\nlocation: %s (%s)\nby player %s", itemName, itemID, locationName, locationID, sentByPlayerID)
 
 	err := SendNtfy(config, title, message)
 	if err != nil {
