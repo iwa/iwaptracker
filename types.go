@@ -1,5 +1,7 @@
 package main
 
+import "database/sql"
+
 // Config struct
 type Config struct {
 	PeriodMinutes int
@@ -30,16 +32,18 @@ func NewGame(name string) *Game {
 
 // State struct, which holds all important information
 type State struct {
+	DB                *sql.DB
 	PlayerGameMap     map[string]string   // map player id to game name
 	TrackedGames      map[string]Game     // map gamename to Game data
 	SlotReceivedItems map[string][]string // map slot id to list of received items ids
 }
 
-func NewState() *State {
+func NewState(db *sql.DB) *State {
 	return &State{
+		DB:                db,
 		PlayerGameMap:     make(map[string]string),
 		TrackedGames:      make(map[string]Game),
-		SlotReceivedItems: make(map[string][]string),
+		SlotReceivedItems: LoadReceivedItems(db),
 	}
 }
 

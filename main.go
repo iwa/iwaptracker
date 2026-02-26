@@ -20,7 +20,10 @@ func main() {
 	// 4. periodically fetch tracker data, and compare with previous data to detect new items received for each slot
 	// 5. send notifications on ntfy for each new item received, with item name and location name
 
-	state := NewState()
+	db := InitDatabase("data.db")
+	defer db.Close()
+
+	state := NewState(db)
 
 	config := NewConfig()
 	parseEnvIntoConfig(config)
