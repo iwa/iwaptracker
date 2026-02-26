@@ -231,7 +231,7 @@ func RefreshPlayerData(config *Config, state *State) {
 
 			// send notification on ntfy
 			log.Println("info: new item received for player with slot id", playerItemsReceived.Player, ":", itemName, "at location", locationName)
-			SendNotification(config, playerIDString, itemID, itemName, locationID, locationName, sentByPlayerID, flagID)
+			SendNotification(config, state, playerIDString, itemID, itemName, locationID, locationName, sentByPlayerID, flagID)
 		}
 	}
 }
@@ -253,9 +253,19 @@ func DetermineFlagRarity(flagID string) string {
 	}
 }
 
-func SendNotification(config *Config, playerID, itemID, itemName, locationID, locationName, sentByPlayerID, flagID string) {
-	title := fmt.Sprintf("%s - Received %s (%s)", playerID, itemName, DetermineFlagRarity(flagID))
-	message := fmt.Sprintf("item: %s (%s)\nlocation: %s (%s)\nby player %s", itemName, itemID, locationName, locationID, sentByPlayerID)
+func SendNotification(config *Config, state *State, playerID, itemID, itemName, locationID, locationName, sentByPlayerID, flagID string) {
+	playerName, ok := state.PlayerNamesMap[playerID]
+	if !ok {
+		playerName = "id " + playerID
+	}
+
+	sentByPlayerName, ok := state.PlayerNamesMap[sentByPlayerID]
+	if !ok {
+		sentByPlayerName = "id " + sentByPlayerID
+	}
+
+	title := fmt.Sprintf("%s - Received %s (%s)", playerName, itemName, DetermineFlagRarity(flagID))
+	message := fmt.Sprintf("item: %s (%s)\nlocation: %s (%s)\nsent by %s", itemName, itemID, locationName, locationID, sentByPlayerName)
 
 	err := SendNtfy(config, title, message)
 	if err != nil {
