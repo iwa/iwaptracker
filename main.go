@@ -80,6 +80,7 @@ func parseEnvIntoConfig(config *Config) {
 
 func initialFetch(config *Config, state *State) {
 
+	// ROOM RELATED
 	roomResp, err := http.Get("https://archipelago.gg/api/room_status/" + config.RoomID)
 	if err != nil {
 		log.Panicln("error: could not fetch room data:", err)
