@@ -30,9 +30,9 @@ func NewGame(name string) *Game {
 
 // State struct, which holds all important information
 type State struct {
-	PlayerGameMap     map[string]string   // map of player id to game name
+	PlayerGameMap     map[string]string   // map player id to game name
 	TrackedGames      map[string]Game     // map gamename to Game data
-	SlotReceivedItems map[string][]string // map of slot id to list of received items ids
+	SlotReceivedItems map[string][]string // map slot id to list of received items ids
 }
 
 func NewState() *State {
