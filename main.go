@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -114,53 +115,40 @@ func initialFetch(config *Config, state *State) {
 		log.Panicln("error: could not decode static tracker response:", err)
 	}
 
-	// store games played by tracked players only
-	gameSet := make(map[string]bool)
-
 	for _, playergame := range apiStaticTrackerResponse.PlayerGame {
 		playerIDString := strconv.Itoa(playergame.Player)
 
-		if !slices.Contains(config.SlotIDs, playerIDString) {
-			continue // not tracked player, we ignore it
-		}
-
-		// we store the game played for this player, to fetch the datapackage later
+		// populating player id to game name map
 		state.PlayerGameMap[playerIDString] = playergame.Game
-
-		// add game to game set to fetch datapackage after
-		if _, ok := gameSet[playergame.Game]; !ok {
-			gameSet[playergame.Game] = true
-		}
 	}
 
 	// fetch datapackages for needed games and populate state
 	for gamename, datapackage := range apiStaticTrackerResponse.Datapackage {
-		if _, ok := gameSet[gamename]; ok {
+		state.TrackedGamesMap[gamename] = *NewGame(gamename)
 
-			state.TrackedGamesMap[gamename] = *NewGame(gamename)
+		log.Println("info: fetching datapackage for game", gamename)
 
-			log.Println("info: fetching datapackage for game", gamename)
-
-			datapackageResp, err := http.Get("https://archipelago.gg/api/datapackage/" + datapackage.Checksum)
-			if err != nil {
-				log.Panicln("error: could not fetch datapackage data for game", gamename, ":", err)
-			}
-
-			var apiDatapackageResponse DatapackageResponse
-			if err := json.NewDecoder(datapackageResp.Body).Decode(&apiDatapackageResponse); err != nil {
-				log.Panicln("error: could not decode datapackage response for game", gamename, ":", err)
-			}
-
-			for itemName, itemID := range apiDatapackageResponse.ItemNameToID {
-				state.TrackedGamesMap[gamename].IdItemsMap[strconv.Itoa(itemID)] = itemName
-			}
-
-			for locationName, locationID := range apiDatapackageResponse.LocationNameToID {
-				state.TrackedGamesMap[gamename].IdLocationsMap[strconv.Itoa(locationID)] = locationName
-			}
-
-			log.Println("info: datapackage for game", gamename, "fetched and processed")
+		datapackageResp, err := http.Get("https://archipelago.gg/api/datapackage/" + datapackage.Checksum)
+		if err != nil {
+			log.Panicln("error: could not fetch datapackage data for game", gamename, ":", err)
 		}
+
+		var apiDatapackageResponse DatapackageResponse
+		if err := json.NewDecoder(datapackageResp.Body).Decode(&apiDatapackageResponse); err != nil {
+			log.Panicln("error: could not decode datapackage response for game", gamename, ":", err)
+		}
+
+		for itemName, itemID := range apiDatapackageResponse.ItemNameToID {
+			state.TrackedGamesMap[gamename].IdItemsMap[strconv.Itoa(itemID)] = itemName
+		}
+
+		for locationName, locationID := range apiDatapackageResponse.LocationNameToID {
+			state.TrackedGamesMap[gamename].IdLocationsMap[strconv.Itoa(locationID)] = locationName
+		}
+
+		log.Println("info: datapackage for game", gamename, "fetched and processed")
+
+		time.Sleep(500 * time.Millisecond) // small delay to avoid hitting rate limits
 	}
 }
 
