@@ -257,7 +257,7 @@ func SendNtfy(config *Config, title, message string) error {
 		return err
 	}
 
-	fmt.Println("[INFO] Response from Ntfy API:", string(responseBody))
+	log.Println("info: response from Ntfy API:", string(responseBody))
 
 	return nil
 }
