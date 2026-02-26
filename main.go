@@ -68,6 +68,14 @@ func parseEnvIntoConfig(config *Config) {
 	} else {
 		log.Panicln("error: SLOT_IDS missing")
 	}
+
+	// ntfy url parsing
+	if ntfyURL := os.Getenv("NTFY_URL"); ntfyURL != "" {
+		config.NtfyURL = ntfyURL
+		log.Println("info: ntfy url is", ntfyURL)
+	} else {
+		log.Panicln("error: NTFY_URL missing")
+	}
 }
 
 func initialFetch(config *Config, state *State) {
