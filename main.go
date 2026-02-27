@@ -26,7 +26,7 @@ func main() {
 	// 5. send notifications on ntfy for each new item received, with item name and location name
 
 	// init all things
-	db := InitDatabase("data.db")
+	db := InitDatabase("data/data.db")
 	defer db.Close()
 
 	state := NewState(db)
