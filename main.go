@@ -36,7 +36,7 @@ func main() {
 
 	// initial fetch + refresh
 	initialFetch(config, state)
-	log.Println("info: refreshing player data...")
+	log.Println("info: initial refresh of player data...")
 	RefreshPlayerData(config, state)
 
 	// create a scheduler
