@@ -7,10 +7,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"slices"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
+
+	"github.com/go-co-op/gocron/v2"
 )
 
 func main() {
@@ -21,6 +25,7 @@ func main() {
 	// 4. periodically fetch tracker data, and compare with previous data to detect new items received for each slot
 	// 5. send notifications on ntfy for each new item received, with item name and location name
 
+	// init all things
 	db := InitDatabase("data.db")
 	defer db.Close()
 
@@ -29,10 +34,42 @@ func main() {
 	config := NewConfig()
 	parseEnvIntoConfig(config)
 
+	// initial fetch + refresh
 	initialFetch(config, state)
+	log.Println("info: refreshing player data...")
+	RefreshPlayerData(config, state)
 
+	// create a scheduler
 	log.Println("info: starting main loop with period of", config.PeriodMinutes, "minutes...")
 
+	scheduler, err := gocron.NewScheduler()
+	if err != nil {
+		log.Panicln("error: could not create scheduler:", err)
+	}
+	defer scheduler.Shutdown()
+
+	_, err = scheduler.NewJob(
+		gocron.DurationJob(
+			time.Duration(config.PeriodMinutes)*time.Minute,
+		),
+		gocron.NewTask(
+			func() {
+				log.Println("info: refreshing player data...")
+				RefreshPlayerData(config, state)
+			},
+		),
+	)
+	if err != nil {
+		log.Panicln("error: could not create cron job:", err)
+	}
+
+	scheduler.Start()
+
+	// block main thread until sigterm
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL)
+	<-c
+	log.Println("info: shutting down...")
 }
 
 func parseEnvIntoConfig(config *Config) {
