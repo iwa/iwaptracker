@@ -54,7 +54,6 @@ func main() {
 		),
 		gocron.NewTask(
 			func() {
-				log.Println("info: refreshing player data...")
 				RefreshPlayerData(config, state)
 			},
 		),
@@ -190,6 +189,8 @@ func initialFetch(config *Config, state *State) {
 }
 
 func RefreshPlayerData(config *Config, state *State) {
+	log.Println("info: refreshing player data...")
+
 	resp, err := http.Get("https://archipelago.gg/api/tracker/" + config.TrackerID)
 	if err != nil {
 		log.Println("error: could not fetch tracker data, skipping...", err)
@@ -272,6 +273,8 @@ func RefreshPlayerData(config *Config, state *State) {
 			SendNotification(config, state, playerIDString, itemID, itemName, locationID, locationName, sentByPlayerID, flagID)
 		}
 	}
+
+	log.Println("info: player data refreshed")
 }
 
 func DetermineFlagRarity(flagID string) string {
