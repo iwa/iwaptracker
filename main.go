@@ -111,7 +111,15 @@ func parseEnvIntoConfig(config *Config) {
 		config.NtfyURL = ntfyURL
 		log.Println("info: ntfy url is", ntfyURL)
 	} else {
-		log.Panicln("error: NTFY_URL missing")
+		log.Println("error: NTFY_URL missing")
+	}
+
+	// discord webhook url parsing
+	if discordWebhookURL := os.Getenv("DISCORD_WEBHOOK_URL"); discordWebhookURL != "" {
+		config.DiscordWebhookURL = discordWebhookURL
+		log.Println("info: discord webhook url is", discordWebhookURL)
+	} else {
+		log.Println("error: DISCORD_WEBHOOK_URL missing")
 	}
 }
 
@@ -308,9 +316,18 @@ func SendNotification(config *Config, state *State, playerID, itemID, itemName, 
 	title := fmt.Sprintf("%s - Received %s (%s)", playerName, itemName, DetermineFlagRarity(flagID))
 	message := fmt.Sprintf("item: %s (%s)\nlocation: %s (%s)\nsent by %s", itemName, itemID, locationName, locationID, sentByPlayerName)
 
-	err := SendNtfy(config, title, message)
-	if err != nil {
-		log.Println("error: could not send notification for player id", playerID, "item id", itemID, ":", err)
+	if config.NtfyURL != "" {
+		err := SendNtfy(config, title, message)
+		if err != nil {
+			log.Println("error: could not send notification for player id", playerID, "item id", itemID, ":", err)
+		}
+	}
+
+	if config.DiscordWebhookURL != "" {
+		err := SendDiscordWebhook(config, title, message, flagID)
+		if err != nil {
+			log.Println("error: could not send discord webhook for player id", playerID, "item id", itemID, ":", err)
+		}
 	}
 }
 
@@ -336,6 +353,65 @@ func SendNtfy(config *Config, title, message string) error {
 	}
 
 	log.Println("info: response from Ntfy API:", string(responseBody))
+
+	return nil
+}
+
+type DiscordWebhookRequest struct {
+	Embeds []struct {
+		Title       string `json:"title"`
+		Description string `json:"description"`
+		Color       int    `json:"color"`
+	} `json:"embeds"`
+}
+
+func SendDiscordWebhook(config *Config, title, message, flagID string) error {
+	requestBody := DiscordWebhookRequest{
+		Embeds: []struct {
+			Title       string `json:"title"`
+			Description string `json:"description"`
+			Color       int    `json:"color"`
+		}{
+			{
+				Title:       title,
+				Description: message,
+				Color:       0x242429, // basic color
+			},
+		},
+	}
+
+	if flagID == "1" || flagID == "3" {
+		requestBody.Embeds[0].Color = 0xC376E4 // purple
+	}
+
+	if flagID == "2" {
+		requestBody.Embeds[0].Color = 0x769FE4 // blue
+	}
+
+	jsonBody, err := json.Marshal(requestBody)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", config.DiscordWebhookURL, strings.NewReader(string(jsonBody)))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	log.Println("info: response from Discord API:", string(responseBody))
 
 	return nil
 }

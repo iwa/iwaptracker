@@ -9,7 +9,8 @@ type Config struct {
 	TrackerID      string
 	TrackedSlotIDs []string
 
-	NtfyURL string
+	NtfyURL           string
+	DiscordWebhookURL string
 }
 
 func NewConfig() *Config {

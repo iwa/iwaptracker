@@ -17,4 +17,5 @@ services:
       ROOM_ID: "room suuid"
       SLOT_IDS: "1,2,3"
       NTFY_URL: "..."
+      DISCORD_WEBHOOK_URL: "..."
 ```
