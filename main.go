@@ -335,8 +335,16 @@ func SendNotification(config *Config, state *State, playerID, itemID, itemName, 
 		sentByPlayerName = "id " + sentByPlayerID
 	}
 
+	if itemName == "" {
+		itemName = "id " + itemID
+	}
+
+	if locationName == "?" {
+		locationName = "? id " + locationID
+	}
+
 	title := fmt.Sprintf("%s - Received %s (%s)", playerName, itemName, DetermineFlagRarity(flagID))
-	message := fmt.Sprintf("item: %s (%s)\nlocation: %s (%s)\nsent by %s", itemName, itemID, locationName, locationID, sentByPlayerName)
+	message := fmt.Sprintf("item: %s\nlocation: %s\nsent by %s", itemName, locationName, sentByPlayerName)
 
 	if config.NtfyURL != "" {
 		err := SendNtfy(config, title, message)
@@ -402,7 +410,7 @@ func SendDiscordWebhook(config *Config, title, message, flagID string) error {
 			Color       int    `json:"color"`
 		}{
 			{
-				Title:       title,
+				Title:       fmt.Sprintf("✨ %s", title),
 				Description: message,
 				Color:       0x242429, // basic color
 			},
@@ -455,7 +463,7 @@ type SignalMessageRequest struct {
 
 func SendSignalMessage(config *Config, title, message string) error {
 	requestBody := SignalMessageRequest{
-		Message:    fmt.Sprintf("%s\n%s", title, message),
+		Message:    fmt.Sprintf("✨ **%s**\n%s", title, message),
 		NotifySelf: true,
 		Number:     config.SignalNumber,
 		Recipients: []string{config.SignalRecipient},
