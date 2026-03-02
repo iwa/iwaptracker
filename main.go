@@ -299,6 +299,8 @@ func RefreshPlayerData(config *Config, state *State) {
 			// send notification on ntfy
 			log.Println("info: new item received for player with slot id", playerItemsReceived.Player, ":", itemName, "at location", locationName)
 			SendNotification(config, state, playerIDString, itemID, itemName, locationID, locationName, sentByPlayerID, flagID)
+
+			time.Sleep(500 * time.Millisecond) // small delay to avoid hitting rate limits
 		}
 	}
 
