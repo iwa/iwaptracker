@@ -18,4 +18,7 @@ services:
       SLOT_IDS: "1,2,3"
       NTFY_URL: "..."
       DISCORD_WEBHOOK_URL: "..."
+      SIGNAL_MESSAGE_URL: "..."
+      SIGNAL_NUMBER: "..."
+      SIGNAL_RECIPIENT: "..."
 ```

@@ -121,6 +121,26 @@ func parseEnvIntoConfig(config *Config) {
 	} else {
 		log.Println("error: DISCORD_WEBHOOK_URL missing")
 	}
+
+	// signal env vars parsing
+	if signalNumber := os.Getenv("SIGNAL_NUMBER"); signalNumber != "" {
+		config.SignalNumber = signalNumber
+		log.Println("info: signal number is", signalNumber)
+	}
+
+	if signalRecipient := os.Getenv("SIGNAL_RECIPIENT"); signalRecipient != "" {
+		config.SignalRecipient = signalRecipient
+		log.Println("info: signal recipient is", signalRecipient)
+	}
+
+	if signalURL := os.Getenv("SIGNAL_MESSAGE_URL"); signalURL != "" {
+		config.SignalMessageURL = signalURL
+		log.Println("info: signal message url is", signalURL)
+	}
+
+	if config.SignalNumber != "" && config.SignalRecipient != "" && config.SignalMessageURL != "" {
+		log.Println("info: signal messaging enabled")
+	}
 }
 
 func initialFetch(config *Config, state *State) {
@@ -329,6 +349,13 @@ func SendNotification(config *Config, state *State, playerID, itemID, itemName, 
 			log.Println("error: could not send discord webhook for player id", playerID, "item id", itemID, ":", err)
 		}
 	}
+
+	if config.SignalMessageURL != "" && config.SignalNumber != "" && config.SignalRecipient != "" {
+		err := SendSignalMessage(config, title, message)
+		if err != nil {
+			log.Println("error: could not send signal message for player id", playerID, "item id", itemID, ":", err)
+		}
+	}
 }
 
 func SendNtfy(config *Config, title, message string) error {
@@ -412,6 +439,51 @@ func SendDiscordWebhook(config *Config, title, message, flagID string) error {
 	}
 
 	log.Println("info: response from Discord API:", string(responseBody))
+
+	return nil
+}
+
+type SignalMessageRequest struct {
+	Message    string   `json:"message"`
+	NotifySelf bool     `json:"notify_self"`
+	Number     string   `json:"number"`
+	Recipients []string `json:"recipients"`
+	TextMode   string   `json:"text_mode"`
+}
+
+func SendSignalMessage(config *Config, title, message string) error {
+	requestBody := SignalMessageRequest{
+		Message:    fmt.Sprintf("%s\n%s", title, message),
+		NotifySelf: true,
+		Number:     config.SignalNumber,
+		Recipients: []string{config.SignalRecipient},
+		TextMode:   "styled",
+	}
+
+	jsonBody, err := json.Marshal(requestBody)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", config.SignalMessageURL, strings.NewReader(string(jsonBody)))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	log.Println("info: response from Signal API:", string(responseBody))
 
 	return nil
 }

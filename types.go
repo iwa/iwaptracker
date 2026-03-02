@@ -11,6 +11,10 @@ type Config struct {
 
 	NtfyURL           string
 	DiscordWebhookURL string
+
+	SignalMessageURL string
+	SignalNumber     string
+	SignalRecipient  string
 }
 
 func NewConfig() *Config {
