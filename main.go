@@ -343,7 +343,7 @@ func SendNotification(config *Config, state *State, playerID, itemID, itemName, 
 		locationName = "? id " + locationID
 	}
 
-	title := fmt.Sprintf("%s - Received %s (%s)", playerName, itemName, DetermineFlagRarity(flagID))
+	title := fmt.Sprintf("%s - Received %s item", playerName, DetermineFlagRarity(flagID))
 	message := fmt.Sprintf("item: %s\nlocation: %s\nsent by %s", itemName, locationName, sentByPlayerName)
 
 	if config.NtfyURL != "" {
