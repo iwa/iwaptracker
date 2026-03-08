@@ -361,7 +361,7 @@ func SendNotification(config *Config, state *State, playerID, itemID, itemName, 
 	}
 
 	if config.SignalMessageURL != "" && config.SignalNumber != "" && config.SignalRecipient != "" {
-		err := SendSignalMessage(config, title, message)
+		err := SendSignalMessage(config, title, message, flagID)
 		if err != nil {
 			log.Println("error: could not send signal message for player id", playerID, "item id", itemID, ":", err)
 		}
@@ -461,9 +461,22 @@ type SignalMessageRequest struct {
 	TextMode   string   `json:"text_mode"`
 }
 
-func SendSignalMessage(config *Config, title, message string) error {
+func SendSignalMessage(config *Config, title, message, flagID string) error {
+	// normal item
+	messageBody := fmt.Sprintf("☑︎ **%s**\n%s", title, message)
+
+	// progression
+	if flagID == "1" || flagID == "3" {
+		messageBody = fmt.Sprintf("✨ **%s**\n%s", title, message)
+	}
+
+	// useful
+	if flagID == "2" {
+		messageBody = fmt.Sprintf("☂️ **%s**\n%s", title, message)
+	}
+
 	requestBody := SignalMessageRequest{
-		Message:    fmt.Sprintf("✨ **%s**\n%s", title, message),
+		Message:    messageBody,
 		NotifySelf: true,
 		Number:     config.SignalNumber,
 		Recipients: []string{config.SignalRecipient},
